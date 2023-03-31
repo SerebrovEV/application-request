@@ -11,7 +11,7 @@ public class RequestDto {
 
     private String description;
 
-    private String createAt;
+    private String createdAt;
 
     private String status;
     private Long userId;

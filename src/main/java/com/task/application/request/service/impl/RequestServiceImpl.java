@@ -27,8 +27,13 @@ public class RequestServiceImpl implements RequestService {
         newRequest.setStatus("false");
         newRequest.setUserId(1L);
         RequestEntity saveRequest = requestMapper.dtoToEntity(newRequest);
-        saveRequest.setCreateAt(LocalDateTime.now());
+        saveRequest.setCreatedAt(LocalDateTime.now());
         saveRequest.setUser(new UserEntity());
         return requestMapper.entityToDto(requestDao.addRequest(saveRequest));
+    }
+
+    @Override
+    public RequestDto get(Long reqId) {
+        return requestMapper.entityToDto(requestDao.getRequest(reqId));
     }
 }

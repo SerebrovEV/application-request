@@ -23,8 +23,8 @@ public class RequestEntity {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "create_at")
-    private LocalDateTime createAt;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     @Column(name = "status")
     private String status;

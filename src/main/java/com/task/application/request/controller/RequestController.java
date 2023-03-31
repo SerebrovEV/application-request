@@ -35,7 +35,7 @@ public class RequestController {
         if (reqId == null){
             return ResponseEntity.ok().build();
         }
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(requestService.get(reqId));
     }
 
     /**

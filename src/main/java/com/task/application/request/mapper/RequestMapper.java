@@ -9,10 +9,10 @@ import org.mapstruct.Mapping;
 public interface RequestMapper {
 
     @Mapping(source = "user.id", target = "userId")
-    @Mapping(target = "createAt", source = "createAt", dateFormat = "dd-MM-yyyy HH:mm:ss")
+    @Mapping(target = "createdAt", source = "createdAt", dateFormat = "dd-MM-yyyy HH:mm:ss")
     RequestDto entityToDto(RequestEntity requestEntity);
 
     @Mapping(target = "user.id", source = "userId")
-    @Mapping(target = "createAt", source = "createAt", dateFormat = "dd-MM-yyyy HH:mm:ss")
+    @Mapping(target = "createdAt", source = "createdAt", dateFormat = "dd-MM-yyyy HH:mm:ss")
     RequestEntity dtoToEntity(RequestDto requestDto);
 }
