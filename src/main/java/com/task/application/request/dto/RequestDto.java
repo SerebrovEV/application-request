@@ -8,5 +8,5 @@ public class RequestDto {
     private String title;
     private String description;
     private String createdAt;
-    //private Integer userId;
+    private Integer userId;
 }
