@@ -10,5 +10,5 @@ public interface UserService {
 
     UserDto getUserByName(String name, Authentication authentication);
 
-    void setUserStatus(Integer userId, String status, Authentication authentication);
+    void setUserStatus(Integer userId, String role, Authentication authentication);
 }

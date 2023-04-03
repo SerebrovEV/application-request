@@ -1,13 +1,16 @@
 package com.task.application.request.dao;
 
-import com.task.application.request.entity.Request;
 import com.task.application.request.entity.User;
 
 import java.util.List;
 
 public interface UserDao {
-    User getByName(String name);
-    List<User> findAll();
+    User getUserByName(String name);
+    List<User> findAllUser();
 
-    User findAllByName(String name);
+    User getUserByPartOfName(String name);
+
+    void setUserRole(User user);
+
+    User getUserById(Integer userId);
 }

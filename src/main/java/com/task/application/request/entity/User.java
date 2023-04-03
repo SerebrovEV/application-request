@@ -1,7 +1,6 @@
 package com.task.application.request.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,7 +18,9 @@ public class User implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "name", unique = true)
     private String name;
+    @Column(name = "role")
     private String role;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)

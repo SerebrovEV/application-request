@@ -27,9 +27,9 @@ public class UserController {
     @Operation(summary = "SetUserStatus", description = "Назначение правами оператора администратором", tags = "User")
     @PatchMapping("/{userId}")
     public ResponseEntity<Void> setUserStatus(@PathVariable Integer userId,
-                                              @RequestParam String status,
+                                              @RequestParam(defaultValue = "OPERATOR") String role,
                                               Authentication authentication) {
-        userService.setUserStatus(userId, status, authentication);
+        userService.setUserStatus(userId, role, authentication);
         return ResponseEntity.ok().build();
     }
 }

@@ -19,7 +19,7 @@ public class RequestController {
     private final RequestService requestService;
 
     @Operation(summary = "addRequest", description = "Создание запроса пользователем", tags = "Request")
-    @PostMapping //++++
+    @PostMapping
     public ResponseEntity<RequestDto> addRequest(@RequestBody CreateRequestDto createRequestDto,
                                                  Authentication authentication) {
         return ResponseEntity.ok(requestService.addRequest(createRequestDto, authentication));
@@ -28,7 +28,7 @@ public class RequestController {
     @Operation(summary = "updateDraftRequest",
             description = "Редактирование запроса пользователем",
             tags = "Request")
-    @PatchMapping("/{reqId}") //++++
+    @PatchMapping("/{reqId}")
     public ResponseEntity<RequestDto> updateRequest(@PathVariable Integer reqId,
                                                     @RequestBody CreateRequestDto createRequestDto,
                                                     Authentication authentication) {
@@ -39,7 +39,7 @@ public class RequestController {
     @Operation(summary = "updateStatusRequest",
             description = "Изменение статуса заявки пользователем или оператором",
             tags = "Request")
-    @PatchMapping("/{reqId}/status") //++++
+    @PatchMapping("/{reqId}/status")
     public ResponseEntity<Void> setStatus(@PathVariable Integer reqId,
                                           @RequestParam() String status,
                                           Authentication authentication) {
@@ -55,6 +55,11 @@ public class RequestController {
         return ResponseEntity.ok(requestService.getAllUserRequests(authentication));
     }
 
+    @GetMapping("/{reqId}")
+    public ResponseEntity<RequestDto> getRequestById(@PathVariable Integer reqId, Authentication authentication) {
+        return ResponseEntity.ok(requestService.getRequestById(reqId, authentication));
+    }
+
     @Operation(summary = "getAllActiveRequestForOperator", description = "Запрос заявок оператором", tags = "Request")
     @GetMapping //+ пагинация, фильтр имени
     public ResponseEntity<List<RequestDto>> getAllActiveRequest(@RequestParam(required = false) String name,
@@ -64,6 +69,7 @@ public class RequestController {
         if (name == null) {
             return ResponseEntity.ok(requestService.getAllSentRequests(authentication));
         } else {
+            // добавить реализацию
             return ResponseEntity.ok(requestService.getAllRequestsByUser(authentication));
         }
     }

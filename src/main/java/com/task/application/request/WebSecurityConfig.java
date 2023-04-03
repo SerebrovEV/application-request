@@ -23,21 +23,6 @@ public class WebSecurityConfig {
 
     @Bean
     public InMemoryUserDetailsManager userDetailsService() {
-//        UserDetails user = User.withDefaultPasswordEncoder()
-//                .username("user")
-//                .password("user")
-//                .roles("USER")
-//                .build();
-//        UserDetails admin = User.withDefaultPasswordEncoder()
-//                .username("admin")
-//                .password("admin")
-//                .roles("ADMIN")
-//                .build();
-//        UserDetails operator = User.withDefaultPasswordEncoder()
-//                .username("operator")
-//                .password("operator")
-//                .roles("OPERATOR")
-//                .build();
 
         User.UserBuilder builder = User.withDefaultPasswordEncoder();
         UserDetails admin = builder.username("admin").password("admin").roles("ADMIN").build();

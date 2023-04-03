@@ -22,4 +22,5 @@ public interface RequestService {
 
     List<RequestDto> getAllRequestsByUser(Authentication authentication);
 
+    RequestDto getRequestById(Integer reqId, Authentication authentication);
 }

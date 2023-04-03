@@ -27,7 +27,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public RequestDto addRequest(CreateRequestDto createRequestDto, Authentication authentication) {
-        User user = userDao.getByName(authentication.getName());
+        User user = userDao.getUserByName(authentication.getName());
         if (userValidate.isUser(user)) {
             Request newRequest = new Request();
             newRequest.setTitle(createRequestDto.getTitle());
@@ -43,7 +43,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public RequestDto updateRequest(Integer reqId, CreateRequestDto createRequestDto, Authentication authentication) {
-        User user = userDao.getByName(authentication.getName());
+        User user = userDao.getUserByName(authentication.getName());
         if (userValidate.isUser(user)) {
             Request changeRequest = requestDao.getRequestById(reqId);
             if (checkStatus.isDraft(changeRequest) && userValidate.isRequestOwner(user, changeRequest)) {
@@ -61,8 +61,24 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
+    public RequestDto getRequestById(Integer reqId, Authentication authentication) {
+        User user = userDao.getUserByName(authentication.getName());
+        if (userValidate.isAdmin(user)) {
+            throw new RuntimeException();
+        } else {
+            Request findRequest = requestDao.getRequestById(reqId);
+            if (userValidate.isOperator(user)) {
+                String newTitle = findRequest.getTitle().replace("", "-");
+                newTitle = newTitle.substring(1, newTitle.length()-1);
+                findRequest.setTitle(newTitle);
+            }
+            return requestMapper.entityToDto(findRequest);
+        }
+    }
+
+    @Override
     public void setStatus(Integer reqId, String status, Authentication authentication) {
-        User user = userDao.getByName(authentication.getName());
+        User user = userDao.getUserByName(authentication.getName());
         Request changeRequest = requestDao.getRequestById(reqId);
 
         if (userValidate.isOperator(user)
@@ -83,7 +99,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public List<RequestDto> getAllUserRequests(Authentication authentication) {
-        User user = userDao.getByName(authentication.getName());
+        User user = userDao.getUserByName(authentication.getName());
         if (userValidate.isUser(user)) {
             List<Request> allRequests = requestDao.getAllUserRequest(user.getId());
             return requestMapper.entityToDto(allRequests);
@@ -95,7 +111,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public List<RequestDto> getAllSentRequests(Authentication authentication) {
-        User user = userDao.getByName(authentication.getName());
+        User user = userDao.getUserByName(authentication.getName());
         if (userValidate.isOperator(user)) {
             List<Request> requests = requestDao.getAllActiveRequests();
             return requestMapper.entityToDto(requests);
@@ -108,4 +124,6 @@ public class RequestServiceImpl implements RequestService {
     public List<RequestDto> getAllRequestsByUser(Authentication authentication) {
         return null;
     }
+
+
 }
