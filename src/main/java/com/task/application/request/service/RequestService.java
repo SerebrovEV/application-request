@@ -18,7 +18,7 @@ public interface RequestService {
 
     List<RequestDto> getAllUserRequests(Authentication authentication);
 
-    List<RequestDto> getAllRequests(Authentication authentication);
+    List<RequestDto> getAllSentRequests(Authentication authentication);
 
     List<RequestDto> getAllRequestsByUser(Authentication authentication);
 

@@ -13,9 +13,16 @@ import java.util.List;
 public class UserDaoImpl implements UserDao {
 
     public User getByName(String findName) {
-        return (User) HibernateUtil.getSessionFactory().openSession().createQuery("FROM User WHERE name like '" + findName + "'").getSingleResult();
+        String searchCondition = "'" + findName + "'";
+        return (User) HibernateUtil.getSessionFactory().openSession().createQuery("FROM User WHERE name like " + searchCondition).getSingleResult();
     }
     public List<User> findAll() throws HibernateException {
         return (List<User>) HibernateUtil.getSessionFactory().openSession().createQuery("From User ").list();
+    }
+
+    @Override
+    public User findAllByName(String name) {
+        String searchCondition = "'%" + name + "%'";
+        return (User) HibernateUtil.getSessionFactory().openSession().createQuery("From User WHERE name ILIKE " + searchCondition).getSingleResult();
     }
 }

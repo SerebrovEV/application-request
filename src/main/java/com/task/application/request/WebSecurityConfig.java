@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -22,13 +23,30 @@ public class WebSecurityConfig {
 
     @Bean
     public InMemoryUserDetailsManager userDetailsService() {
-        UserDetails user = User.withDefaultPasswordEncoder()
-                .username("user")
-                .password("user")
-                .roles("USER")
-                .build();
-        return new InMemoryUserDetailsManager(user);
+//        UserDetails user = User.withDefaultPasswordEncoder()
+//                .username("user")
+//                .password("user")
+//                .roles("USER")
+//                .build();
+//        UserDetails admin = User.withDefaultPasswordEncoder()
+//                .username("admin")
+//                .password("admin")
+//                .roles("ADMIN")
+//                .build();
+//        UserDetails operator = User.withDefaultPasswordEncoder()
+//                .username("operator")
+//                .password("operator")
+//                .roles("OPERATOR")
+//                .build();
+
+        User.UserBuilder builder = User.withDefaultPasswordEncoder();
+        UserDetails admin = builder.username("admin").password("admin").roles("ADMIN").build();
+        UserDetails user = builder.username("user").password("user").roles("USER").build();
+        UserDetails operator = builder.username("operator").password("operator").roles("OPERATOR").build();
+        return new InMemoryUserDetailsManager(user,admin, operator);
     }
+
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -37,11 +55,19 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests((authz) ->
                         authz
                                 .mvcMatchers(AUTH_WHITELIST).permitAll()
-                                .mvcMatchers("/users/**", "/requests/**").authenticated()
+                                .mvcMatchers("/requests/**").hasAnyRole("USER", "OPERATOR")
+                                .mvcMatchers("/users/**").hasAnyRole("ADMIN")
 
                 )
+                .formLogin()
+                .defaultSuccessUrl("/swagger-ui/index.html", true)
+                .and()
                 .cors().and()
-                .httpBasic(withDefaults());
+                .httpBasic(withDefaults())
+                .logout()
+                .logoutUrl("/perform_logout")
+                .invalidateHttpSession(true)
+                .deleteCookies(AbstractRememberMeServices.SPRING_SECURITY_REMEMBER_ME_COOKIE_KEY);
         return http.build();
     }
 }

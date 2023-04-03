@@ -7,5 +7,12 @@ import java.util.List;
 public interface RequestDao {
 
     Request addRequest(Request request);
-    List<Request> getAllRequests();
+
+    List<Request> getAllActiveRequests();
+
+    Request getRequestById(Integer reqId);
+
+    Request updateRequest(Request request);
+
+    List<Request> getAllUserRequest(Integer userId);
 }

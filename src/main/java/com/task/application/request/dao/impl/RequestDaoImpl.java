@@ -18,14 +18,41 @@ public class RequestDaoImpl implements RequestDao {
     @Override
     public Request addRequest(Request request) {
         Session session = HibernateUtil.getSessionFactory().openSession();
-        Transaction tx1 = session.beginTransaction();
+        Transaction tx = session.beginTransaction();
         session.persist(request);
-        tx1.commit();
+        tx.commit();
+        session.close();
         return request;
     }
 
     @Override
-    public List<Request> getAllRequests() {
-        return (List<Request>) HibernateUtil.getSessionFactory().openSession().createQuery("From Request ").list();
+    public Request getRequestById(Integer reqId) {
+        return HibernateUtil.getSessionFactory().openSession().get(Request.class, reqId);
     }
+
+    @Override
+    public Request updateRequest(Request request) {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        Transaction tx = session.beginTransaction();
+        Request result = session.merge(request);
+        tx.commit();
+        session.close();
+        return result;
+    }
+
+    @Override
+    public List<Request> getAllUserRequest(Integer userId) {
+        return (List<Request>) HibernateUtil.getSessionFactory()
+                .openSession()
+                .createQuery("FROM Request WHERE user = " + userId)
+                .list();
+    }
+
+
+    @Override
+    public List<Request> getAllActiveRequests() {
+        return (List<Request>) HibernateUtil.getSessionFactory().openSession().createQuery("From Request WHERE status like 'SENT'").list();
+    }
+
+
 }

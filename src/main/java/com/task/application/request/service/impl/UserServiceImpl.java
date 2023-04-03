@@ -16,16 +16,28 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
     private final UserDao userDao;
     private final UserMapper userMapper;
+    private final UserValidatePermission userValidate;
 
     @Override
     public List<UserDto> getAllUser(Authentication authentication) {
-        List<User> users = userDao.findAll();
-        return userMapper.entityToDto(users);
+        User user = userDao.getByName(authentication.getName());
+        if (userValidate.isAdmin(user)) {
+            List<User> users = userDao.findAll();
+            return userMapper.entityToDto(users);
+        } else {
+            throw new RuntimeException();
+        }
     }
 
     @Override
     public UserDto getUserByName(String name, Authentication authentication) {
-        return null;
+      User admin = userDao.getByName(authentication.getName());
+        if (userValidate.isAdmin(admin)) {
+            User result = userDao.findAllByName(name);
+            return userMapper.entityToDto(result);
+        }else {
+            throw new RuntimeException();
+        }
     }
 
     @Override
