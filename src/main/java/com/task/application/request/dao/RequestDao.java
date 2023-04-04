@@ -3,6 +3,7 @@ package com.task.application.request.dao;
 import com.task.application.request.entity.Request;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface RequestDao {
 
@@ -10,7 +11,7 @@ public interface RequestDao {
 
     List<Request> getAllSentRequests(Integer page, String sortBy, String orderBy);
 
-    Request getRequestById(Integer reqId);
+    Optional<Request> getRequestById(Integer reqId);
 
     Request updateRequest(Request request);
 

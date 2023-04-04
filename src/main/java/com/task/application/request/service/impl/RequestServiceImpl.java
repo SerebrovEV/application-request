@@ -7,7 +7,9 @@ import com.task.application.request.dto.RequestDto;
 import com.task.application.request.dto.Status;
 import com.task.application.request.entity.Request;
 import com.task.application.request.entity.User;
+import com.task.application.request.exception.RequestNotFoundException;
 import com.task.application.request.exception.UserForbiddenException;
+import com.task.application.request.exception.UserNotFoundException;
 import com.task.application.request.mapper.RequestMapper;
 import com.task.application.request.service.RequestService;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +30,8 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public RequestDto addRequest(CreateRequestDto createRequestDto, Authentication authentication) {
-        User user = userDao.getUserByName(authentication.getName());
+        User user = userDao.getUserByName(authentication.getName())
+                .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
         if (userValidate.isUser(user)) {
             Request newRequest = new Request();
             newRequest.setTitle(createRequestDto.getTitle());
@@ -44,9 +47,11 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public RequestDto updateRequest(Integer reqId, CreateRequestDto createRequestDto, Authentication authentication) {
-        User user = userDao.getUserByName(authentication.getName());
+        User user = userDao.getUserByName(authentication.getName())
+                .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
         if (userValidate.isUser(user)) {
-            Request changeRequest = requestDao.getRequestById(reqId);
+            Request changeRequest = requestDao.getRequestById(reqId)
+                    .orElseThrow(() -> new RequestNotFoundException(reqId));
             if (checkStatus.isDraft(changeRequest) && userValidate.isRequestOwner(user, changeRequest)) {
                 changeRequest.setTitle(createRequestDto.getTitle());
                 changeRequest.setDescription(createRequestDto.getDescription());
@@ -62,11 +67,13 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public RequestDto getRequestById(Integer reqId, Authentication authentication) {
-        User user = userDao.getUserByName(authentication.getName());
+        User user = userDao.getUserByName(authentication.getName())
+                .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
         if (userValidate.isAdmin(user)) {
             throw new UserForbiddenException(user.getId());
         } else {
-            Request findRequest = requestDao.getRequestById(reqId);
+            Request findRequest = requestDao.getRequestById(reqId)
+                    .orElseThrow(() -> new RequestNotFoundException(reqId));
             if (userValidate.isOperator(user) && checkStatus.isSent(findRequest)) {
                 String newTitle = findRequest.getTitle().replace("", "-");
                 newTitle = newTitle.substring(1, newTitle.length() - 1);
@@ -82,8 +89,10 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public void setStatus(Integer reqId, String status, Authentication authentication) {
-        User user = userDao.getUserByName(authentication.getName());
-        Request changeRequest = requestDao.getRequestById(reqId);
+        User user = userDao.getUserByName(authentication.getName())
+                .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
+        Request changeRequest = requestDao.getRequestById(reqId)
+                .orElseThrow(() -> new RequestNotFoundException(reqId));
 
         if (userValidate.isOperator(user)
                 && checkStatus.isSent(changeRequest)
@@ -104,7 +113,8 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public List<RequestDto> getAllUserRequests(Integer page, Authentication authentication, String sortBy, String
             orderBy) {
-        User user = userDao.getUserByName(authentication.getName());
+        User user = userDao.getUserByName(authentication.getName())
+                .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
         if (userValidate.isUser(user)) {
             List<Request> allRequests = requestDao.getAllUserRequest(page, user.getId(), sortBy, orderBy);
             return requestMapper.entityToDto(allRequests);
@@ -119,7 +129,8 @@ public class RequestServiceImpl implements RequestService {
                                                Authentication authentication,
                                                String sortBy,
                                                String orderBy) {
-        User user = userDao.getUserByName(authentication.getName());
+        User user = userDao.getUserByName(authentication.getName())
+                .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
         if (userValidate.isOperator(user)) {
             List<Request> requests = requestDao.getAllSentRequests(page, sortBy, orderBy);
             return requestMapper.entityToDto(requests);
@@ -131,9 +142,11 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public List<RequestDto> getAllSentRequestsByPartUserName(Integer page, String name, Authentication
             authentication, String sortBy, String orderBy) {
-        User user = userDao.getUserByName(authentication.getName());
+        User user = userDao.getUserByName(authentication.getName())
+                .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
         if (userValidate.isOperator(user)) {
-            User reqUser = userDao.getUserByPartOfName(name);
+            User reqUser = userDao.getUserByPartOfName(name)
+                    .orElseThrow(() -> new UserNotFoundException(name));
             List<Request> requests = requestDao.getAllSentRequestByUser(reqUser.getId(), page, sortBy, orderBy);
             return requestMapper.entityToDto(requests);
         } else {

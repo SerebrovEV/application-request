@@ -10,6 +10,7 @@ import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -27,8 +28,8 @@ public class RequestDaoImpl implements RequestDao {
     }
 
     @Override
-    public Request getRequestById(Integer reqId) {
-        return HibernateUtil.getSessionFactory().openSession().get(Request.class, reqId);
+    public Optional<Request> getRequestById(Integer reqId) {
+        return Optional.ofNullable(HibernateUtil.getSessionFactory().openSession().get(Request.class, reqId));
     }
 
     @Override

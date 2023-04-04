@@ -1,13 +1,13 @@
 package com.task.application.request.exception;
 
 public class UserNotFoundException extends RuntimeException {
-    private final int id;
+    private final String name;
 
-    public UserNotFoundException(int id) {
-        this.id = id;
+    public UserNotFoundException(String name) {
+        this.name = name;
     }
 
-    public int getId() {
-        return id;
+    public String getName() {
+        return name;
     }
 }

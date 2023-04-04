@@ -5,6 +5,7 @@ import com.task.application.request.dto.Role;
 import com.task.application.request.dto.UserDto;
 import com.task.application.request.entity.User;
 import com.task.application.request.exception.UserForbiddenException;
+import com.task.application.request.exception.UserNotFoundException;
 import com.task.application.request.mapper.UserMapper;
 import com.task.application.request.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,8 @@ public class UserServiceImpl implements UserService {
     public UserDto getUserByName(String name, Authentication authentication) {
         User user = userDao.getUserByName(authentication.getName());
         if (userValidate.isAdmin(user)) {
-            User result = userDao.getUserByPartOfName(name);
+            User result = userDao.getUserByPartOfName(name)
+                    .orElseThrow(() -> new UserNotFoundException(name));
             return userMapper.entityToDto(result);
         } else {
             throw new UserForbiddenException(user.getId());

@@ -10,22 +10,25 @@ import org.hibernate.Transaction;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
+
 @Repository
 @RequiredArgsConstructor
 public class UserDaoImpl implements UserDao {
 
-    public User getUserByName(String name) {
+    public Optional<User> getUserByName(String name) {
         String searchCondition = "'" + name + "'";
-        return (User) HibernateUtil.getSessionFactory().openSession().createQuery("FROM User WHERE name like " + searchCondition).getSingleResult();
+        return (Optional<User>) HibernateUtil.getSessionFactory().openSession().createQuery("FROM User WHERE name like " + searchCondition).getSingleResult();
     }
+
     public List<User> findAllUser() throws HibernateException {
         return (List<User>) HibernateUtil.getSessionFactory().openSession().createQuery("From User ").list();
     }
 
     @Override
-    public User getUserByPartOfName(String name) {
+    public Optional<User> getUserByPartOfName(String name) {
         String searchCondition = "'%" + name + "%'";
-        return (User) HibernateUtil.getSessionFactory().openSession().createQuery("From User WHERE name ILIKE " + searchCondition).stream().findFirst().get();
+        return HibernateUtil.getSessionFactory().openSession().createQuery("From User WHERE name ILIKE " + searchCondition).stream().findFirst();
     }
 
     @Override

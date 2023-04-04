@@ -11,7 +11,7 @@ public class ExceptionHandler {
     @org.springframework.web.bind.annotation.ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body((String.format("Пользователь c id = %d  не найден", e.getId())));
+                .body((String.format("Пользователь c name = %s  не найден", e.getName())));
     }
 
     @org.springframework.web.bind.annotation.ExceptionHandler(RequestNotFoundException.class)
