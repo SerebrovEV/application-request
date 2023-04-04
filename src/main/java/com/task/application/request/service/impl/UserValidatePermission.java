@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 public class UserValidatePermission {
 
     public boolean isAdmin(User user){
-        System.out.println(user.getRole());
         return user.getRole().contains(Role.ADMIN.name());
     }
 
