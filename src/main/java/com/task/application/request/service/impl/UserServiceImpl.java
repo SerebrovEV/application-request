@@ -23,7 +23,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDto> getAllUser(Authentication authentication) {
-        User user = userDao.getUserByName(authentication.getName());
+        User user = userDao.getUserByName(authentication.getName())
+                .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
         if (userValidate.isAdmin(user)) {
             List<User> users = userDao.findAllUser();
             return userMapper.entityToDto(users);
@@ -34,7 +35,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getUserByName(String name, Authentication authentication) {
-        User user = userDao.getUserByName(authentication.getName());
+        User user = userDao.getUserByName(authentication.getName())
+                .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
         if (userValidate.isAdmin(user)) {
             User result = userDao.getUserByPartOfName(name)
                     .orElseThrow(() -> new UserNotFoundException(name));
@@ -46,7 +48,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void setUserStatus(Integer userId, String role, Authentication authentication) {
-        User user = userDao.getUserByName(authentication.getName());
+        User user = userDao.getUserByName(authentication.getName())
+                .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
         if (userValidate.isAdmin(user) && role.equals(Role.OPERATOR.name())) {
             User result = userDao.getUserById(userId);
             result.setRole(role);
