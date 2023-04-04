@@ -48,29 +48,31 @@ public class RequestController {
     }
 
     @Operation(summary = "getAllUserRequest", description = "Запрос всех заявок пользователем", tags = "Request")
-    @GetMapping("/me") //++ пагинация!!!
+    @GetMapping("/me")
     public ResponseEntity<List<RequestDto>> getAllUserRequests(@RequestParam Integer page,
-                                                               @RequestParam String sort,
+                                                               @RequestParam(required = false, defaultValue = "date", name = "sort_by") String sortBy,
+                                                               @RequestParam(required = false, defaultValue = "desc", name = "order_by") String orderBy,
                                                                Authentication authentication) {
-        return ResponseEntity.ok(requestService.getAllUserRequests(authentication));
+        return ResponseEntity.ok(requestService.getAllUserRequests(page,authentication, sortBy, orderBy));
     }
 
+    @Operation(summary = "getRequest", description = "Запрос заявки по Id", tags = "Request")
     @GetMapping("/{reqId}")
     public ResponseEntity<RequestDto> getRequestById(@PathVariable Integer reqId, Authentication authentication) {
         return ResponseEntity.ok(requestService.getRequestById(reqId, authentication));
     }
 
     @Operation(summary = "getAllActiveRequestForOperator", description = "Запрос заявок оператором", tags = "Request")
-    @GetMapping //+ пагинация, фильтр имени
-    public ResponseEntity<List<RequestDto>> getAllActiveRequest(@RequestParam(required = false) String name,
-                                                                @RequestParam String sort,
-                                                                @RequestParam Integer page,
+    @GetMapping //+ пагинация
+    public ResponseEntity<List<RequestDto>> getAllActiveRequest(@RequestParam Integer page,
+                                                                @RequestParam(required = false) String name,
+                                                                @RequestParam(required = false, defaultValue = "date", name = "sort_by") String sortBy,
+                                                                @RequestParam(required = false, defaultValue = "desc", name = "order_by") String orderBy,
                                                                 Authentication authentication) {
         if (name == null) {
-            return ResponseEntity.ok(requestService.getAllSentRequests(authentication));
+            return ResponseEntity.ok(requestService.getAllSentRequests(page,authentication, sortBy, orderBy));
         } else {
-            // добавить реализацию
-            return ResponseEntity.ok(requestService.getAllRequestsByUser(authentication));
+            return ResponseEntity.ok(requestService.getAllSentRequestsByPartUserName(page, name, authentication, sortBy, orderBy));
         }
     }
 

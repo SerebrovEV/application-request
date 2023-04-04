@@ -11,7 +11,7 @@ public class RequestCheckStatus {
     }
 
     public boolean isSent(Request request){
-        return request.getStatus().equalsIgnoreCase(Status.DRAFT.name());
+        return request.getStatus().equalsIgnoreCase(Status.SENT.name());
     }
 
     public boolean isSent(String status) {

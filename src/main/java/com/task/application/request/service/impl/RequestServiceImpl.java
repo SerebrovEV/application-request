@@ -67,63 +67,75 @@ public class RequestServiceImpl implements RequestService {
             throw new RuntimeException();
         } else {
             Request findRequest = requestDao.getRequestById(reqId);
-            if (userValidate.isOperator(user)) {
+            if (userValidate.isOperator(user) && checkStatus.isSent(findRequest)) {
                 String newTitle = findRequest.getTitle().replace("", "-");
-                newTitle = newTitle.substring(1, newTitle.length()-1);
+                newTitle = newTitle.substring(1, newTitle.length() - 1);
                 findRequest.setTitle(newTitle);
+                return requestMapper.entityToDto(findRequest);
+            } else if (userValidate.isUser(user)) {
+                return requestMapper.entityToDto(findRequest);
+            } else {
+                throw new RuntimeException();
             }
-            return requestMapper.entityToDto(findRequest);
         }
     }
 
-    @Override
-    public void setStatus(Integer reqId, String status, Authentication authentication) {
-        User user = userDao.getUserByName(authentication.getName());
-        Request changeRequest = requestDao.getRequestById(reqId);
+        @Override
+        public void setStatus (Integer reqId, String status, Authentication authentication){
+            User user = userDao.getUserByName(authentication.getName());
+            Request changeRequest = requestDao.getRequestById(reqId);
 
-        if (userValidate.isOperator(user)
-                && checkStatus.isSent(changeRequest)
-                && (checkStatus.isAccepted(status)) || checkStatus.isRejected(status)) {
+            if (userValidate.isOperator(user)
+                    && checkStatus.isSent(changeRequest)
+                    && (checkStatus.isAccepted(status)) || checkStatus.isRejected(status)) {
 
-            changeRequest.setStatus(status.toUpperCase());
-            requestDao.updateRequest(changeRequest);
+                changeRequest.setStatus(status.toUpperCase());
+                requestDao.updateRequest(changeRequest);
 
-        } else if (userValidate.isUser(user) && checkStatus.isSent(status) && checkStatus.isDraft(changeRequest)) {
+            } else if (userValidate.isUser(user) && checkStatus.isSent(status) && checkStatus.isDraft(changeRequest)) {
 
-            changeRequest.setStatus(status.toUpperCase());
-            requestDao.updateRequest(changeRequest);
-        } else {
-            throw new RuntimeException();
-        }
-    }
-
-    @Override
-    public List<RequestDto> getAllUserRequests(Authentication authentication) {
-        User user = userDao.getUserByName(authentication.getName());
-        if (userValidate.isUser(user)) {
-            List<Request> allRequests = requestDao.getAllUserRequest(user.getId());
-            return requestMapper.entityToDto(allRequests);
-        } else {
-            throw new RuntimeException();
+                changeRequest.setStatus(status.toUpperCase());
+                requestDao.updateRequest(changeRequest);
+            } else {
+                throw new RuntimeException();
+            }
         }
 
-    }
+        @Override
+        public List<RequestDto> getAllUserRequests (Integer page, Authentication authentication, String sortBy, String
+        orderBy){
+            User user = userDao.getUserByName(authentication.getName());
+            if (userValidate.isUser(user)) {
+                List<Request> allRequests = requestDao.getAllUserRequest(page, user.getId(), sortBy, orderBy);
+                return requestMapper.entityToDto(allRequests);
+            } else {
+                throw new RuntimeException();
+            }
 
-    @Override
-    public List<RequestDto> getAllSentRequests(Authentication authentication) {
-        User user = userDao.getUserByName(authentication.getName());
-        if (userValidate.isOperator(user)) {
-            List<Request> requests = requestDao.getAllActiveRequests();
-            return requestMapper.entityToDto(requests);
-        } else {
-            throw new RuntimeException();
         }
+
+        @Override
+        public List<RequestDto> getAllSentRequests (Integer page, Authentication authentication, String sortBy, String
+        orderBy){
+            if (userValidate.isOperator(userDao.getUserByName(authentication.getName()))) {
+                List<Request> requests = requestDao.getAllSentRequests(page, sortBy, orderBy);
+                return requestMapper.entityToDto(requests);
+            } else {
+                throw new RuntimeException();
+            }
+        }
+
+        @Override
+        public List<RequestDto> getAllSentRequestsByPartUserName (Integer page, String name, Authentication
+        authentication, String sortBy, String orderBy){
+            if (userValidate.isOperator(userDao.getUserByName(authentication.getName()))) {
+                User reqUser = userDao.getUserByPartOfName(name);
+                List<Request> requests = requestDao.getAllSentRequestByUser(reqUser.getId(), page, sortBy, orderBy);
+                return requestMapper.entityToDto(requests);
+            } else {
+                throw new RuntimeException();
+            }
+        }
+
+
     }
-
-    @Override
-    public List<RequestDto> getAllRequestsByUser(Authentication authentication) {
-        return null;
-    }
-
-
-}

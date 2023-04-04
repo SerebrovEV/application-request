@@ -6,6 +6,7 @@ import com.task.application.request.util.HibernateUtil;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -41,18 +42,47 @@ public class RequestDaoImpl implements RequestDao {
     }
 
     @Override
-    public List<Request> getAllUserRequest(Integer userId) {
-        return (List<Request>) HibernateUtil.getSessionFactory()
-                .openSession()
-                .createQuery("FROM Request WHERE user = " + userId)
-                .list();
+    public List<Request> getAllUserRequest(Integer page, Integer userId, String sortBy, String orderBy) {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        String hql = "FROM Request WHERE user = " + userId;
+        hql = isOrderBy(hql, sortBy, orderBy);
+        Query<Request> query = session.createQuery(hql);
+        query.setFirstResult(5 * (page - 1));
+        query.setMaxResults(5);
+        return query.list();
+    }
+
+    @Override
+    public List<Request> getAllSentRequestByUser(Integer userId, Integer page, String sortBy, String orderBy) {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        String hql = "FROM Request WHERE status like 'SENT' AND user = " + userId;
+        hql = isOrderBy(hql, sortBy, orderBy);
+        Query<Request> query = session.createQuery(hql);
+        query.setFirstResult(5 * (page - 1));
+        query.setMaxResults(5);
+        return query.list();
     }
 
 
     @Override
-    public List<Request> getAllActiveRequests() {
-        return (List<Request>) HibernateUtil.getSessionFactory().openSession().createQuery("From Request WHERE status like 'SENT'").list();
+    public List<Request> getAllSentRequests(Integer page, String sortBy, String orderBy) {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        String hql = "From Request WHERE status like 'SENT'";
+        hql = isOrderBy(hql, sortBy, orderBy);
+        Query<Request> query = session.createQuery(hql);
+        query.setFirstResult(5 * (page - 1));
+        query.setMaxResults(5);
+        return query.list();
     }
 
+    private String isOrderBy(String hql, String sortBy, String orderBy) {
+        if (sortBy.equals("date")) {
+            hql = hql + " ORDER BY createdAt";
+        }
+        if (sortBy.equals("date") && (orderBy.equals("desc") || orderBy.equals("asc"))) {
+            hql = hql + " " + orderBy;
+        }
+        return hql;
+    }
 
 }

@@ -16,11 +16,11 @@ public interface RequestService {
 
     void setStatus(Integer reqId, String status, Authentication authentication);
 
-    List<RequestDto> getAllUserRequests(Authentication authentication);
+    List<RequestDto> getAllUserRequests(Integer page, Authentication authentication, String sortBy, String orderBy);
 
-    List<RequestDto> getAllSentRequests(Authentication authentication);
+    List<RequestDto> getAllSentRequests(Integer page, Authentication authentication, String sortBy, String orderBy);
 
-    List<RequestDto> getAllRequestsByUser(Authentication authentication);
+    List<RequestDto> getAllSentRequestsByPartUserName(Integer page, String name, Authentication authentication, String sortBy, String orderBy);
 
     RequestDto getRequestById(Integer reqId, Authentication authentication);
 }

@@ -21,8 +21,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDto> getAllUser(Authentication authentication) {
-        User user = userDao.getUserByName(authentication.getName());
-        if (userValidate.isAdmin(user)) {
+        if (userValidate.isAdmin(userDao.getUserByName(authentication.getName()))) {
             List<User> users = userDao.findAllUser();
             return userMapper.entityToDto(users);
         } else {
@@ -32,8 +31,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getUserByName(String name, Authentication authentication) {
-        User admin = userDao.getUserByName(authentication.getName());
-        if (userValidate.isAdmin(admin)) {
+        if (userValidate.isAdmin(userDao.getUserByName(authentication.getName()))) {
             User result = userDao.getUserByPartOfName(name);
             return userMapper.entityToDto(result);
         } else {
@@ -43,11 +41,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void setUserStatus(Integer userId, String role, Authentication authentication) {
-        User admin = userDao.getUserByName(authentication.getName());
-        if (userValidate.isAdmin(admin) && role.equals(Role.OPERATOR.name())) {
-            User findUser = userDao.getUserById(userId);
-            findUser.setRole(role);
-            userDao.setUserRole(findUser);
+        if (userValidate.isAdmin(userDao.getUserByName(authentication.getName())) && role.equals(Role.OPERATOR.name())) {
+            User result = userDao.getUserById(userId);
+            result.setRole(role);
+            userDao.setUserRole(result);
         } else {
             throw new RuntimeException();
         }

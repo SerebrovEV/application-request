@@ -28,9 +28,8 @@ public class WebSecurityConfig {
         UserDetails admin = builder.username("admin").password("admin").roles("ADMIN").build();
         UserDetails user = builder.username("user").password("user").roles("USER").build();
         UserDetails operator = builder.username("operator").password("operator").roles("OPERATOR").build();
-        return new InMemoryUserDetailsManager(user,admin, operator);
+        return new InMemoryUserDetailsManager(user, admin, operator);
     }
-
 
 
     @Bean
