@@ -9,15 +9,15 @@ import org.springframework.stereotype.Component;
 public class UserValidatePermission {
 
     public boolean isAdmin(User user){
-        return user.getRole().equals(Role.ADMIN.name());
+        return user.getRole().contains(Role.ADMIN.name());
     }
 
     public boolean isOperator(User user){
-        return user.getRole().equals(Role.OPERATOR.name());
+        return user.getRole().contains(Role.OPERATOR.name());
     }
 
     public boolean isUser(User user){
-        return user.getRole().equals(Role.USER.name());
+        return user.getRole().contains(Role.USER.name());
     }
 
     public boolean isRequestOwner(User user, Request request){
