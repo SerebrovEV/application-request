@@ -27,7 +27,7 @@ public class WebSecurityConfig {
         User.UserBuilder builder = User.withDefaultPasswordEncoder();
         UserDetails admin = builder.username("admin").password("admin").roles("ADMIN").build();
         UserDetails user = builder.username("user").password("user").roles("USER").build();
-        UserDetails operator = builder.username("operator").password("operator").roles("OPERATOR").build();
+        UserDetails operator = builder.username("operator").password("operator").roles("OPERATOR", "ADMIN").build();
         return new InMemoryUserDetailsManager(user, admin, operator);
     }
 
