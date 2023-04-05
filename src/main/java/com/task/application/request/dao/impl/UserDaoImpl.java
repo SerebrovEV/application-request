@@ -41,8 +41,8 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public User getUserById(Integer userId) {
-        return HibernateUtil.getSessionFactory().openSession().get(User.class, userId);
+    public Optional<User> getUserById(Integer userId) {
+        return Optional.ofNullable(HibernateUtil.getSessionFactory().openSession().get(User.class, userId));
     }
 
 

@@ -5,6 +5,7 @@ import com.task.application.request.dto.Role;
 import com.task.application.request.dto.UserDto;
 import com.task.application.request.entity.User;
 import com.task.application.request.exception.UserForbiddenException;
+import com.task.application.request.exception.UserNotFoundByIdException;
 import com.task.application.request.exception.UserNotFoundException;
 import com.task.application.request.mapper.UserMapper;
 import com.task.application.request.service.UserService;
@@ -47,11 +48,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void setUserStatus(Integer userId, String role, Authentication authentication) {
+    public void setUserRole(Integer userId, String role, Authentication authentication) {
         User user = userDao.getUserByName(authentication.getName())
                 .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
         if (userValidate.isAdmin(user) && role.equals(Role.OPERATOR.name())) {
-            User result = userDao.getUserById(userId);
+            User result = userDao.getUserById(userId)
+                    .orElseThrow(() -> new UserNotFoundByIdException(userId));
             result.setRole(role);
             userDao.setUserRole(result);
         } else {

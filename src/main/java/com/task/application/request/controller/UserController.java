@@ -29,7 +29,7 @@ public class UserController {
     public ResponseEntity<Void> setUserStatus(@PathVariable Integer userId,
                                               @RequestParam(defaultValue = "OPERATOR") String role,
                                               Authentication authentication) {
-        userService.setUserStatus(userId, role, authentication);
+        userService.setUserRole(userId, role, authentication);
         return ResponseEntity.ok().build();
     }
 }

@@ -13,5 +13,5 @@ public interface UserDao {
 
     void setUserRole(User user);
 
-    User getUserById(Integer userId);
+    Optional<User> getUserById(Integer userId);
 }
