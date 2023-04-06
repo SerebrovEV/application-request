@@ -72,7 +72,7 @@ public class RequestServiceImpl implements RequestService {
     public RequestDto getRequestById(Integer reqId, Authentication authentication) {
         User user = userDao.getUserByName(authentication.getName())
                 .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
-        if (userValidate.isAdmin(user)) {
+        if (userValidate.isAdmin(user) && !(userValidate.isOperator(user))) {
             throw new UserForbiddenException(user.getId());
         } else {
             Request findRequest = requestDao.getRequestById(reqId)

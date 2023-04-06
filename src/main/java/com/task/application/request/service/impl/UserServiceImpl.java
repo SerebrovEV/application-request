@@ -54,7 +54,7 @@ public class UserServiceImpl implements UserService {
         if (userValidate.isAdmin(user) && role.equals(Role.OPERATOR.name())) {
             User result = userDao.getUserById(userId)
                     .orElseThrow(() -> new UserNotFoundByIdException(userId));
-            result.setRole(role);
+            result.setRole(result.getRole() + ", " + role);
             userDao.setUserRole(result);
         } else {
             throw new UserForbiddenException(user.getId());

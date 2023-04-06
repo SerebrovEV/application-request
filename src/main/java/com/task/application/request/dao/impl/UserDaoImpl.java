@@ -18,7 +18,7 @@ public class UserDaoImpl implements UserDao {
 
     public Optional<User> getUserByName(String name) {
         String searchCondition = "'" + name + "'";
-        return (Optional<User>) HibernateUtil.getSessionFactory().openSession().createQuery("FROM User WHERE name like " + searchCondition).getSingleResult();
+        return (Optional<User>) HibernateUtil.getSessionFactory().openSession().createQuery("FROM User WHERE name like " + searchCondition).stream().findFirst();
     }
 
     public List<User> findAllUser() throws HibernateException {
