@@ -25,6 +25,7 @@
 - PostgreSQL 15;
 - Hibernate;
 - Lombok;
+- Swagger;
 - Maven.
 
 ### Тестирование
