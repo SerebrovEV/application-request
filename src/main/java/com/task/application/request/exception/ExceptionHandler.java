@@ -14,6 +14,12 @@ public class ExceptionHandler {
                 .body((String.format("Пользователь c name = %s  не найден", e.getName())));
     }
 
+    @org.springframework.web.bind.annotation.ExceptionHandler(UserNotFoundByIdException.class)
+    public ResponseEntity<String> handleUserNotFoundByIdException(UserNotFoundByIdException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body((String.format("Пользователь c ID = %d  не найден", e.getId())));
+    }
+
     @org.springframework.web.bind.annotation.ExceptionHandler(RequestNotFoundException.class)
     public ResponseEntity<String> handleRequestNotFoundException(RequestNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -24,5 +30,11 @@ public class ExceptionHandler {
     public ResponseEntity<String> handleUserForbiddenException(UserForbiddenException e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body((String.format("Пользователю c id = %d  доступ запрещен", e.getId())));
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<String> handleBadRequestException(BadRequestException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body((("Некорректный запрос")));
     }
 }

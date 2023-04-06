@@ -7,6 +7,7 @@ import com.task.application.request.dto.RequestDto;
 import com.task.application.request.dto.Status;
 import com.task.application.request.entity.Request;
 import com.task.application.request.entity.User;
+import com.task.application.request.exception.BadRequestException;
 import com.task.application.request.exception.RequestNotFoundException;
 import com.task.application.request.exception.UserForbiddenException;
 import com.task.application.request.exception.UserNotFoundException;
@@ -46,7 +47,9 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public RequestDto updateRequest(Integer reqId, CreateRequestDto createRequestDto, Authentication authentication) {
+    public RequestDto updateRequest(Integer reqId,
+                                    CreateRequestDto createRequestDto,
+                                    Authentication authentication) {
         User user = userDao.getUserByName(authentication.getName())
                 .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
         if (userValidate.isUser(user)) {
@@ -58,7 +61,7 @@ public class RequestServiceImpl implements RequestService {
                 requestDao.updateRequest(changeRequest);
                 return requestMapper.entityToDto(changeRequest);
             } else {
-                throw new UserForbiddenException(user.getId());
+                throw new BadRequestException();
             }
         } else {
             throw new UserForbiddenException(user.getId());
@@ -79,10 +82,10 @@ public class RequestServiceImpl implements RequestService {
                 newTitle = newTitle.substring(1, newTitle.length() - 1);
                 findRequest.setTitle(newTitle);
                 return requestMapper.entityToDto(findRequest);
-            } else if (userValidate.isUser(user)) {
+            } else if (userValidate.isRequestOwner(user, findRequest)) {
                 return requestMapper.entityToDto(findRequest);
             } else {
-                throw new UserForbiddenException(user.getId());
+                throw new BadRequestException();
             }
         }
     }
@@ -101,7 +104,9 @@ public class RequestServiceImpl implements RequestService {
             changeRequest.setStatus(status.toUpperCase());
             requestDao.updateRequest(changeRequest);
 
-        } else if (userValidate.isUser(user) && checkStatus.isSent(status) && checkStatus.isDraft(changeRequest)) {
+        } else if (userValidate.isUser(user)
+                && checkStatus.isSent(status)
+                && checkStatus.isDraft(changeRequest)) {
 
             changeRequest.setStatus(status.toUpperCase());
             requestDao.updateRequest(changeRequest);
@@ -111,8 +116,10 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public List<RequestDto> getAllUserRequests(Integer page, Authentication authentication, String sortBy, String
-            orderBy) {
+    public List<RequestDto> getAllUserRequests(Integer page,
+                                               Authentication authentication,
+                                               String sortBy,
+                                               String orderBy) {
         User user = userDao.getUserByName(authentication.getName())
                 .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
         if (userValidate.isUser(user)) {
@@ -140,8 +147,10 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public List<RequestDto> getAllSentRequestsByPartUserName(Integer page, String name, Authentication
-            authentication, String sortBy, String orderBy) {
+    public List<RequestDto> getAllSentRequestsByPartUserName(Integer page,
+                                                             String name,
+                                                             Authentication authentication,
+                                                             String sortBy, String orderBy) {
         User user = userDao.getUserByName(authentication.getName())
                 .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
         if (userValidate.isOperator(user)) {
