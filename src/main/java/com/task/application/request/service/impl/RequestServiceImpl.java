@@ -1,10 +1,7 @@
 package com.task.application.request.service.impl;
 
-import com.task.application.request.dao.RequestDao;
-import com.task.application.request.dao.UserDao;
 import com.task.application.request.dto.CreateRequestDto;
 import com.task.application.request.dto.RequestDto;
-import com.task.application.request.dto.Status;
 import com.task.application.request.entity.Request;
 import com.task.application.request.entity.User;
 import com.task.application.request.exception.BadRequestException;
@@ -12,7 +9,9 @@ import com.task.application.request.exception.RequestNotFoundException;
 import com.task.application.request.exception.UserForbiddenException;
 import com.task.application.request.exception.UserNotFoundException;
 import com.task.application.request.mapper.RequestMapper;
+import com.task.application.request.repository.RequestRepository;
 import com.task.application.request.service.RequestService;
+import com.task.application.request.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -20,27 +19,33 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.task.application.request.dto.Status.DRAFT;
+
 @Service
 @RequiredArgsConstructor
 public class RequestServiceImpl implements RequestService {
-    private final RequestDao requestDao;
-    private final UserDao userDao;
     private final RequestMapper requestMapper;
     private final UserValidatePermission userValidate;
     private final RequestCheckStatus checkStatus;
+    private final UserService userService;
+    private final RequestRepository requestRepository;
 
     @Override
     public RequestDto addRequest(CreateRequestDto createRequestDto, Authentication authentication) {
-        User user = userDao.getUserByName(authentication.getName())
-                .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
+
+        User user = userService.findUserByName(authentication.getName());
+
         if (userValidate.isUser(user)) {
-            Request newRequest = new Request();
-            newRequest.setTitle(createRequestDto.getTitle());
-            newRequest.setDescription(createRequestDto.getTitle());
-            newRequest.setCreatedAt(LocalDateTime.now());
-            newRequest.setStatus(Status.DRAFT.name());
-            newRequest.setUser(user);
-            return requestMapper.entityToDto(requestDao.addRequest(newRequest));
+
+            Request newRequest = Request.builder()
+                    .title(createRequestDto.getTitle())
+                    .description(createRequestDto.getDescription())
+                    .createdAt(LocalDateTime.now())
+                    .status(DRAFT.name())
+                    .user(user)
+                    .build();
+
+            return requestMapper.entityToDto(requestRepository.save(newRequest));
         } else {
             throw new UserForbiddenException(user.getId());
         }
@@ -50,19 +55,20 @@ public class RequestServiceImpl implements RequestService {
     public RequestDto updateRequest(Integer reqId,
                                     CreateRequestDto createRequestDto,
                                     Authentication authentication) {
-        User user = userDao.getUserByName(authentication.getName())
-                .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
+
+        User user = userService.findUserByName(authentication.getName());
+
         if (userValidate.isUser(user)) {
-            Request changeRequest = requestDao.getRequestById(reqId)
-                    .orElseThrow(() -> new RequestNotFoundException(reqId));
-            if (checkStatus.isDraft(changeRequest) && userValidate.isRequestOwner(user, changeRequest)) {
-                changeRequest.setTitle(createRequestDto.getTitle());
-                changeRequest.setDescription(createRequestDto.getDescription());
-                requestDao.updateRequest(changeRequest);
-                return requestMapper.entityToDto(changeRequest);
-            } else {
-                throw new BadRequestException();
-            }
+
+            Request changeRequest = requestRepository.findByIdAndAndStatusAndUserId(reqId, DRAFT.name(), user.getId())
+                    .orElseThrow(BadRequestException::new);
+
+            changeRequest.setTitle(createRequestDto.getTitle());
+            changeRequest.setDescription(createRequestDto.getDescription());
+
+            requestRepository.save(changeRequest);
+            return requestMapper.entityToDto(changeRequest);
+
         } else {
             throw new UserForbiddenException(user.getId());
         }
@@ -70,46 +76,51 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public RequestDto getRequestById(Integer reqId, Authentication authentication) {
-        User user = userDao.getUserByName(authentication.getName())
-                .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
-        if (userValidate.isAdmin(user) && !(userValidate.isOperator(user))) {
+
+        User user = userService.findUserByName(authentication.getName());
+
+        if (userValidate.isAdmin(user)) {
             throw new UserForbiddenException(user.getId());
         } else {
-            Request findRequest = requestDao.getRequestById(reqId)
-                    .orElseThrow(() -> new RequestNotFoundException(reqId));
+
+            Request findRequest = findRequestById(reqId);
+
             if (userValidate.isOperator(user) && checkStatus.isSent(findRequest)) {
+
                 String newTitle = findRequest.getTitle().replace("", "-");
                 newTitle = newTitle.substring(1, newTitle.length() - 1);
                 findRequest.setTitle(newTitle);
                 return requestMapper.entityToDto(findRequest);
+
             } else if (userValidate.isRequestOwner(user, findRequest)) {
                 return requestMapper.entityToDto(findRequest);
+
             } else {
                 throw new BadRequestException();
             }
         }
+
     }
+
 
     @Override
     public void setStatus(Integer reqId, String status, Authentication authentication) {
-        User user = userDao.getUserByName(authentication.getName())
-                .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
-        Request changeRequest = requestDao.getRequestById(reqId)
-                .orElseThrow(() -> new RequestNotFoundException(reqId));
+        User user = userService.findUserByName(authentication.getName());
+        Request changeRequest = findRequestById(reqId);
 
         if (userValidate.isOperator(user)
                 && checkStatus.isSent(changeRequest)
                 && (checkStatus.isAccepted(status)) || checkStatus.isRejected(status)) {
 
             changeRequest.setStatus(status.toUpperCase());
-            requestDao.updateRequest(changeRequest);
+            requestRepository.save(changeRequest);
 
         } else if (userValidate.isUser(user)
                 && checkStatus.isSent(status)
                 && checkStatus.isDraft(changeRequest)) {
 
             changeRequest.setStatus(status.toUpperCase());
-            requestDao.updateRequest(changeRequest);
+            requestRepository.save(changeRequest);
         } else {
             throw new UserForbiddenException(user.getId());
         }
@@ -120,8 +131,9 @@ public class RequestServiceImpl implements RequestService {
                                                Authentication authentication,
                                                String sortBy,
                                                String orderBy) {
-        User user = userDao.getUserByName(authentication.getName())
-                .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
+
+        User user = userService.findUserByName(authentication.getName());
+
         if (userValidate.isUser(user)) {
             List<Request> allRequests = requestDao.getAllUserRequest(page, user.getId(), sortBy, orderBy);
             return requestMapper.entityToDto(allRequests);
@@ -136,8 +148,9 @@ public class RequestServiceImpl implements RequestService {
                                                Authentication authentication,
                                                String sortBy,
                                                String orderBy) {
-        User user = userDao.getUserByName(authentication.getName())
-                .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
+
+        User user = userService.findUserByName(authentication.getName());
+
         if (userValidate.isOperator(user)) {
             List<Request> requests = requestDao.getAllSentRequests(page, sortBy, orderBy);
             return requestMapper.entityToDto(requests);
@@ -151,8 +164,9 @@ public class RequestServiceImpl implements RequestService {
                                                              String name,
                                                              Authentication authentication,
                                                              String sortBy, String orderBy) {
-        User user = userDao.getUserByName(authentication.getName())
-                .orElseThrow(() -> new UserNotFoundException(authentication.getName()));
+
+        User user = userService.findUserByName(authentication.getName());
+
         if (userValidate.isOperator(user)) {
             User reqUser = userDao.getUserByPartOfName(name)
                     .orElseThrow(() -> new UserNotFoundException(name));
@@ -161,6 +175,11 @@ public class RequestServiceImpl implements RequestService {
         } else {
             throw new UserForbiddenException(user.getId());
         }
+    }
+
+    private Request findRequestById(Integer id) {
+        return requestRepository.findById(id)
+                .orElseThrow(() -> new RequestNotFoundException(id));
     }
 
 
